@@ -5,74 +5,104 @@ const LifeBoard = () => {
   const [lifeBoard, setLifeBoard] = useState<number[][]>(
     new Array(30).fill(new Array(30).fill(0))
   );
-
   const [currentLifeState, setCurrentLifeState] = useState<number[][]>([]);
   const [gameInProgress, setGameInProgress] = useState<boolean>(false);
 
-  const setRandomInitialState = () => {
-    // Logic to set random inital start state
+  // Initializes a 30x30 board with all cells set to 0 (dead)
+  const resetLifeBoardState = () => {
+    setLifeBoard(new Array(30).fill(0).map(() => new Array(30).fill(0)));
   };
 
-  const setLifeBoardInitialState = (rowIdx: number, colIdx: number) => {
-    // Cannot set state in between of process
-    if (gameInProgress) return;
-
-    // Deep Clone current LifeBoard state
+  /**
+   * Sets a random initial state for the life board by activating 100 random cells
+   */
+  const setRandomInitialState = () => {
+    resetLifeBoardState();
     const clonedLifeBoard = JSON.parse(JSON.stringify(lifeBoard));
-    clonedLifeBoard[rowIdx][colIdx] =
-      clonedLifeBoard[rowIdx][colIdx] === 0 ? 1 : 0;
-    setCurrentLifeState([...currentLifeState, [rowIdx, colIdx]]);
+
+    // Set 100 random cells to be alive
+    for (let i = 0; i < 300; i++) {
+      const rowIdx = Math.floor(Math.random() * 30);
+      const colIdx = Math.floor(Math.random() * 30);
+
+      setCurrentLifeState((prev) => [...prev, [rowIdx, colIdx]]);
+      clonedLifeBoard[rowIdx][colIdx] = 1;
+    }
+
     setLifeBoard(clonedLifeBoard);
   };
 
+  /**
+   * Sets the initial state of a specific cell
+   * @param {number} rowIdx - The row index of the cell
+   * @param {number} colIdx - The column index of the cell
+   */
+  const setLifeBoardInitialState = (rowIdx, colIdx) => {
+    // Prevent changes while the game is in progress
+    if (gameInProgress) return;
+
+    // Toggle the state of the specified cell
+    const clonedLifeBoard = JSON.parse(JSON.stringify(lifeBoard));
+    clonedLifeBoard[rowIdx][colIdx] = clonedLifeBoard[rowIdx][colIdx] === 0 ? 1 : 0;
+
+    setCurrentLifeState((prev) => [...prev, [rowIdx, colIdx]]);
+    setLifeBoard(clonedLifeBoard);
+  };
+
+  // Starts the game
   const activateGameplay = () => {
     setGameInProgress(true);
     calculateNextLifeBoardState();
   };
 
+  // Stops the game
   const terminateGameplay = () => {
     setGameInProgress(false);
   };
 
-  // Function to calculate next game of life state
+  /**
+   * Calculates the next state of the life board based on the current state
+   */
   const calculateNextLifeBoardState = () => {
     if (!currentLifeState.length) {
       terminateGameplay();
       return;
-    };
+    }
 
     let distinctCells = new Set();
 
-    currentLifeState.map((state, key) => {
-      const allNeighbors = getAllNeighbors(state[0], state[1]);
-      distinctCells.add(JSON.stringify(state));
-      allNeighbors.forEach((neighborIdx) =>
-        distinctCells.add(JSON.stringify(neighborIdx))
+    // Collect all cells that need to be checked (current live cells and their neighbors)
+    currentLifeState.forEach(([row, col]) => {
+      distinctCells.add(JSON.stringify([row, col]));
+      getAllNeighbors(row, col).forEach((neighbor) =>
+        distinctCells.add(JSON.stringify(neighbor))
       );
     });
+
     checkDistinctCellsLife(distinctCells);
   };
 
-  // Function to update all cells life based on their neighbors population
+  /**
+   * Updates the life state of all distinct cells based on their neighbors' population
+   * @param {Set} cells - A set of cells to be checked
+   */
   const checkDistinctCellsLife = (cells) => {
     const clonedLifeBoard = JSON.parse(JSON.stringify(lifeBoard));
     const newCurrentLifeState = [];
 
     cells.forEach((cell) => {
-      const cellIndexes = JSON.parse(cell);
-      const cellNeighbors = getAllNeighbors(cellIndexes[0], cellIndexes[1]);
-      const areaPopulation = cellNeighbors.reduce((acc, cell) => {
-        return acc + lifeBoard[cell[0]][cell[1]];
-      }, 0);
+      const [row, col] = JSON.parse(cell);
+      const cellNeighbors = getAllNeighbors(row, col);
+      const areaPopulation = cellNeighbors.reduce((acc, [r, c]) => acc + lifeBoard[r][c], 0);
 
-      if ((areaPopulation === 2 || areaPopulation === 3) && lifeBoard[cellIndexes[0]][cellIndexes[1]] === 1) {
-        newCurrentLifeState.push([cellIndexes[0], cellIndexes[1]]);
-        clonedLifeBoard[cellIndexes[0]][cellIndexes[1]] = 1;
-      } else if (areaPopulation === 3 && lifeBoard[cellIndexes[0]][cellIndexes[1]] === 0) {
-        newCurrentLifeState.push([cellIndexes[0], cellIndexes[1]]);
-        clonedLifeBoard[cellIndexes[0]][cellIndexes[1]] = 1;
+      if ((areaPopulation === 2 || areaPopulation === 3) && lifeBoard[row][col] === 1) {
+        newCurrentLifeState.push([row, col]);
+        clonedLifeBoard[row][col] = 1;
+      } else if (areaPopulation === 3 && lifeBoard[row][col] === 0) {
+        newCurrentLifeState.push([row, col]);
+        clonedLifeBoard[row][col] = 1;
       } else {
-        clonedLifeBoard[cellIndexes[0]][cellIndexes[1]] = 0;
+        clonedLifeBoard[row][col] = 0;
       }
     });
 
@@ -80,8 +110,13 @@ const LifeBoard = () => {
     setLifeBoard(clonedLifeBoard);
   };
 
-  // Function to get all neighbor cell indees for particular cell
-  const getAllNeighbors = (rowIdx: number, colIdx: number) => {
+  /**
+   * Gets all valid neighbor cell indices for a given cell
+   * @param {number} rowIdx - The row index of the cell
+   * @param {number} colIdx - The column index of the cell
+   * @returns {Array} - An array of valid neighbor cell indices
+   */
+  const getAllNeighbors = (rowIdx, colIdx) => {
     const neighbors = [
       [rowIdx - 1, colIdx - 1],
       [rowIdx - 1, colIdx],
@@ -97,17 +132,20 @@ const LifeBoard = () => {
     return neighbors.filter(([r, c]) => r >= 0 && r < 30 && c >= 0 && c < 30);
   };
 
+  // Effect to calculate the next life board state at regular intervals
   useEffect(() => {
     if (gameInProgress) {
-      setTimeout(() => {
+      const interval = setTimeout(() => {
         calculateNextLifeBoardState();
       }, 500);
+
+      return () => clearTimeout(interval);
     }
   }, [gameInProgress, lifeBoard]);
 
   return (
     <>
-      <main className="bg-[#30303A] w-full p-[50px] pb-24">
+      <main className="bg-[#30303A] w-full h-full p-[50px] pb-24">
         <div className="flex flex-col items-center justify-center">
           {lifeBoard &&
             lifeBoard.map((lifeRow: number[], rowIdx: number) => {
@@ -134,6 +172,7 @@ const LifeBoard = () => {
           activateGameplay={activateGameplay}
           terminateGameplay={terminateGameplay}
           setRandomInitialState={setRandomInitialState}
+          resetLifeBoardState={resetLifeBoardState}
           gameInProgress={gameInProgress}
         />
       </footer>

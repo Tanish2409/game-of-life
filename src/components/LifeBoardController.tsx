@@ -5,12 +5,14 @@ type LifeBoardControllerProps = {
   activateGameplay: () => void;
   terminateGameplay: () => void;
   setRandomInitialState: () => void;
+  resetLifeBoardState: () => void;
   gameInProgress: boolean;
 };
 
 const LifeBoardController = ({
   activateGameplay,
   terminateGameplay,
+  resetLifeBoardState,
   setRandomInitialState,
   gameInProgress,
 }: LifeBoardControllerProps) => {
@@ -21,6 +23,10 @@ const LifeBoardController = ({
       ) : (
         <StyledButton title="Stop" action={terminateGameplay} />
       )}
+      <StyledButton
+        title="Reset"
+        action={resetLifeBoardState}
+      />
       <StyledButton
         title="Create Random Start State"
         action={setRandomInitialState}
