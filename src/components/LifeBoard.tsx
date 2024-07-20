@@ -37,7 +37,7 @@ const LifeBoard = () => {
    * @param {number} rowIdx - The row index of the cell
    * @param {number} colIdx - The column index of the cell
    */
-  const setLifeBoardInitialState = (rowIdx, colIdx) => {
+  const setLifeBoardInitialState = (rowIdx: number, colIdx: number) => {
     // Prevent changes while the game is in progress
     if (gameInProgress) return;
 
@@ -69,7 +69,7 @@ const LifeBoard = () => {
       return;
     }
 
-    let distinctCells = new Set();
+    let distinctCells = new Set<string>();
 
     // Collect all cells that need to be checked (current live cells and their neighbors)
     currentLifeState.forEach(([row, col]) => {
@@ -86,9 +86,9 @@ const LifeBoard = () => {
    * Updates the life state of all distinct cells based on their neighbors' population
    * @param {Set} cells - A set of cells to be checked
    */
-  const checkDistinctCellsLife = (cells) => {
+  const checkDistinctCellsLife = (cells: Set<string>) => {
     const clonedLifeBoard = JSON.parse(JSON.stringify(lifeBoard));
-    const newCurrentLifeState = [];
+    const newCurrentLifeState: number[][] = [];
 
     cells.forEach((cell) => {
       const [row, col] = JSON.parse(cell);
@@ -116,7 +116,7 @@ const LifeBoard = () => {
    * @param {number} colIdx - The column index of the cell
    * @returns {Array} - An array of valid neighbor cell indices
    */
-  const getAllNeighbors = (rowIdx, colIdx) => {
+  const getAllNeighbors = (rowIdx: number, colIdx: number) => {
     const neighbors = [
       [rowIdx - 1, colIdx - 1],
       [rowIdx - 1, colIdx],

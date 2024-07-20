@@ -1,4 +1,3 @@
-import React from 'react'
 
 type StyledButtonProps = {
   title: string,
