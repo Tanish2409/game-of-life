@@ -10,15 +10,17 @@ const LifeBoard = () => {
 
   // Initializes a 30x30 board with all cells set to 0 (dead)
   const resetLifeBoardState = () => {
-    setLifeBoard(new Array(30).fill(0).map(() => new Array(30).fill(0)));
+    terminateGameplay();
+    const newBoard = new Array(30).fill(0).map(() => new Array(30).fill(0));
+    setLifeBoard(newBoard);
   };
 
   /**
    * Sets a random initial state for the life board by activating 100 random cells
    */
   const setRandomInitialState = () => {
-    resetLifeBoardState();
-    const clonedLifeBoard = JSON.parse(JSON.stringify(lifeBoard));
+    terminateGameplay();
+    const clonedLifeBoard = new Array(30).fill(0).map(() => new Array(30).fill(0));
 
     // Set 100 random cells to be alive
     for (let i = 0; i < 300; i++) {
